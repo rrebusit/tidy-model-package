@@ -1,0 +1,58 @@
+---
+title: "Tidy Models Tutorial"
+author: "Rica Rebusit"
+date: "3/20/2022"
+output:
+  html_document:
+    theme: darkly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Get set up
+This blog post is a tutorial to teach you how to fit a simple linear regression using **tidymodels**. So first, you will need to install the tidymodels package by typing **install.packages("tidymodels")** in the console. If you don't have it already, you will also need to install the **ggplot2** and **dplyr** packages. Now that you have those packages installed, you will now want to load it in by typing **library()**
+```{r}
+library(tidymodels)
+library(ggplot2)
+library(dplyr)
+```
+Let's load the data. You can get it from here: [Abalone Data Set](https://www.kaggle.com/datasets/rodolfomendes/abalone-dataset)
+```{r}
+abalone <- read.csv("~/Documents/RicaRebusitWeb/abalone.csv")
+head(abalone)
+```
+
+## Making the linear regression
+With this data set we can try to find the relationship of our response variable **Rings** which represents age and a predictor, let's choose  **Diameter**. Make a scatter plot of these variables.
+```{r}
+ggplot(abalone, aes(Diameter, Rings)) + geom_point()
+```
+
+Create a parsnip for the model. This provides tidy, unified interface.
+```{r}
+par.spec <- linear_reg() %>%
+  set_mode("regression") %>%
+  set_engine("lm")
+```
+Now we can fit a model **y~x** on our response variable **Rings** as y and predictor variable **Diameter** as x
+```{r}
+lm.fit <- par.spec %>% # The specification from the previous step
+  fit(Rings ~ Diameter, data=abalone)
+lm.fit
+```
+We can now use this model to look at various aspects such as the parameters using **tidy()**, the statistics using **glance()**, and the predictions using **predict()**
+```{r}
+tidy(lm.fit)
+glance(lm.fit)
+predict(lm.fit, new_data=abalone)
+```
+
+If you want to look at the predictions of Rings you can make a tibble of **Rings** and **.pred** the predictions
+```{r}
+bind_cols(
+  predict(lm.fit, new_data=abalone), abalone
+) %>%
+  select(Rings, .pred)
+```
+And there you have it! A simple quick run through of a simple linear regression using **tidymodels**
